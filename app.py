@@ -2,11 +2,11 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 
-application = Flask(__name__)
-cors = CORS(application)
+app = Flask(__name__)
+cors = CORS(app)
 
-application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'
-db = SQLAlchemy(application)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'
+db = SQLAlchemy(app)
 
 
 class Task(db.Model):
@@ -21,22 +21,22 @@ class Task(db.Model):
             'completed': self.completed
         }
 
-@application.route('/')
+@app.route('/')
 def hello_world():
     return 'this is daniels portfolio check change'
 
 
-@application.route('/tasks', methods=['GET'])
+@app.route('/tasks', methods=['GET'])
 def get_tasks():
-    with application.app_context():
+    with app.app_context():
         tasks = Task.query.all()
         tasks = [task.to_dict() for task in tasks]
         return jsonify(tasks)
 
 
-@application.route('/tasks', methods=['POST'])
+@app.route('/tasks', methods=['POST'])
 def create_task():
-    with application.app_context():
+    with app.app_context():
         data = request.get_json()
         text = data.get('text')
         if not text:
@@ -47,9 +47,9 @@ def create_task():
         return jsonify(task.to_dict()), 201
 
 
-@application.route('/tasks/<int:task_id>', methods=['PUT'])
+@app.route('/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
-    with application.app_context():
+    with app.app_context():
         task = Task.query.get(task_id)
         if not task:
             return jsonify({'error': 'Task not found'}), 404
@@ -64,9 +64,9 @@ def update_task(task_id):
         return jsonify(task.to_dict())
 
 
-@application.route('/tasks/<int:task_id>', methods=['DELETE'])
+@app.route('/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
-    with application.app_context():
+    with app.app_context():
         task = Task.query.get(task_id)
         if not task:
             return jsonify({'error': 'Task not found'}), 404
@@ -76,6 +76,6 @@ def delete_task(task_id):
 
 
 if __name__ == '__main__':
-    with application.app_context():
+    with app.app_context():
         db.create_all()
-    application.run()
+    app.run()
